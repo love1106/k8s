@@ -159,7 +159,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: kubernetes-dashboard
+  name: cluster-admin
 subjects:
   - kind: ServiceAccount
     name: kubernetes-dashboard
@@ -185,10 +185,13 @@ spec:
       labels:
         k8s-app: kubernetes-dashboard
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: kubernetes-dashboard
-          image: kubernetesui/dashboard:v2.0.0-beta8
-          imagePullPolicy: IfNotPresent
+          image: kubernetesui/dashboard:v2.7.0
+          imagePullPolicy: Always
           ports:
             - containerPort: 8443
               protocol: TCP
@@ -258,7 +261,7 @@ metadata:
   namespace: kubernetes-dashboard
 spec:
   replicas: 1
-  revisionHistoryLimit: 4
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       k8s-app: dashboard-metrics-scraper
@@ -266,12 +269,13 @@ spec:
     metadata:
       labels:
         k8s-app: dashboard-metrics-scraper
-      annotations:
-        seccomp.security.alpha.kubernetes.io/pod: 'runtime/default'
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: dashboard-metrics-scraper
-          image: kubernetesui/metrics-scraper:v1.0.1
+          image: kubernetesui/metrics-scraper:v1.0.8
           ports:
             - containerPort: 8000
               protocol: TCP
